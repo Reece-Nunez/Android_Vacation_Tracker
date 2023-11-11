@@ -8,21 +8,22 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.example.myapplication.Entity.Vacation;
+import com.example.myapplication.Entity.Excursion;
 
 import java.util.List;
 
 @Dao
-public interface VacationDao {
-    @Query("SELECT * FROM vacations")
-    LiveData<List<Vacation>> getAll();
+public interface ExcursionDao {
+    @Query("SELECT * FROM excursions WHERE vacationId = :vacationId")
+    LiveData<List<Excursion>> getExcursionsForVacation(int vacationId);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(Vacation vacation);
+    void insert(Excursion excursion);
 
     @Update
-    void update(Vacation vacation);
+    void update(Excursion excursion);
 
     @Delete
-    void delete(Vacation vacation);
+    void delete(Excursion excursion);
+
 }
