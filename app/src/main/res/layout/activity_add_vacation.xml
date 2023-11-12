@@ -23,7 +23,26 @@
             android:hint="Enter Vacation Title"
             android:inputType="text"/>
 
-        <!-- TODO: Additional EditTexts for hotel, start date, end date -->
+        <EditText
+            android:id="@+id/editTextHotel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter Hotel Name"
+            android:inputType="text"/>
+
+        <EditText
+            android:id="@+id/editTextStartDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:hint="Pick Start Date"/>
+
+        <EditText
+            android:id="@+id/editTextEndDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:hint="Pick End Date"/>
 
         <Button
             android:id="@+id/buttonSaveVacation"
@@ -31,6 +50,14 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="Save Vacation"/>
+
+        <Button
+            android:id="@+id/btnViewVacations"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="View Vacations"/>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

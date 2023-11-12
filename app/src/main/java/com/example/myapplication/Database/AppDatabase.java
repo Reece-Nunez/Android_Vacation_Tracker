@@ -6,6 +6,7 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
+import com.example.myapplication.Dao.ExcursionDao;
 import com.example.myapplication.Dao.VacationDao;
 import com.example.myapplication.Entity.Excursion;
 import com.example.myapplication.Entity.Vacation;
@@ -17,7 +18,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     private static volatile AppDatabase INSTANCE;
 
-    static AppDatabase getDatabase(final Context context) {
+    public static AppDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
             synchronized (AppDatabase.class) {
                 if (INSTANCE == null) {
@@ -27,5 +28,6 @@ public abstract class AppDatabase extends RoomDatabase {
                 }
             }
         }
+        return INSTANCE;
     }
 }

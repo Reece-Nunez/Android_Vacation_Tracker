@@ -5,7 +5,6 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import java.util.Date;
 import java.util.Objects;
 
 @Entity(tableName = "vacations")
@@ -20,12 +19,20 @@ public class Vacation {
     private String hotel;
 
     @ColumnInfo(name = "start_date")
-    private Date startDate;
+    private String startDate;
 
     @ColumnInfo(name = "end_date")
-    private Date endDate;
+    private String endDate;
 
-    public Vacation(String title, String hotel, Date startDate, Date endDate) {
+    public Vacation(String title, String hotel, String startDate, String endDate) {
+        this.title = title;
+        this.hotel = hotel;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
+    public Vacation(int id, String title, String hotel, String startDate, String endDate) {
+        this.id = id;
         this.title = title;
         this.hotel = hotel;
         this.startDate = startDate;
@@ -56,19 +63,19 @@ public class Vacation {
         this.hotel = hotel;
     }
 
-    public Date getStartDate() {
+    public String getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
 
-    public Date getEndDate() {
+    public String getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(String endDate) {
         this.endDate = endDate;
     }
 
