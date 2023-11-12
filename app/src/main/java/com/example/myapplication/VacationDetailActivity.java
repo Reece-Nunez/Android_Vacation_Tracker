@@ -52,24 +52,17 @@ public class VacationDetailActivity extends AppCompatActivity implements Vacatio
                .setMessage("Are you sure you want to edit this vacation?")
                .setPositiveButton("Yes", (dialog, which) -> {
                     editVacation(vacation);
-                    dialog.dismiss();
                 })
                .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
                .create();
         alertDialog.show();
-
-        Intent intent = new Intent(VacationDetailActivity.this, VacationDetailActivity.class);
-        intent.putExtra("vacationId", vacation.getId());
-        startActivity(intent);
     }
 
     private void editVacation(Vacation vacation) {
-        executorService.execute(() -> {
-            AppDatabase appDatabase = AppDatabase.getDatabase(VacationDetailActivity.this);
-            appDatabase.vacationDao().update(vacation);
-            runOnUiThread(this::loadVacations);
-        });
-        finish();
+       Intent intent = new Intent(VacationDetailActivity.this, AddVacationActivity.class);
+       intent.putExtra("vacationId", vacation.getId());
+       startActivity(intent);
+       finish();
     }
 
     @Override

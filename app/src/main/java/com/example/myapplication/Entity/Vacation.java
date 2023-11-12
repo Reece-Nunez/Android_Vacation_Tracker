@@ -84,12 +84,11 @@ public class Vacation {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass()!= o.getClass()) return false;
-        Vacation vacation = (Vacation) o;
-        return id == vacation.id &&
-                Objects.equals(title, vacation.title) &&
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Vacation vacation = (Vacation) obj;
+        return  Objects.equals(title, vacation.title) &&
                 Objects.equals(hotel, vacation.hotel) &&
                 Objects.equals(startDate, vacation.startDate) &&
                 Objects.equals(endDate, vacation.endDate);

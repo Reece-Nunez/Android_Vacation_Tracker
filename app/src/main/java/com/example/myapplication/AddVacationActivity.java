@@ -32,6 +32,7 @@ public class AddVacationActivity extends AppCompatActivity {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
     private Vacation currentVacation;
+    private Vacation originalVacation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +73,31 @@ public class AddVacationActivity extends AppCompatActivity {
                 Toast.makeText(AddVacationActivity.this, "No vacation selected to set alert for.", Toast.LENGTH_SHORT).show();
             }
         });
+
+        if (getIntent().hasExtra("vacationId")) {
+            int vacationId = getIntent().getIntExtra("vacationId", -1);
+            if(vacationId != -1) {
+                loadVacationDetails(vacationId);
+            }
+        }
+    }
+
+    private void loadVacationDetails(int vacationId) {
+        executor.execute(() -> {
+            AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
+            Vacation vacation = db.vacationDao().getVacationById(vacationId);
+            runOnUiThread(() -> {
+                populateUIWithVacationDetails(vacation);
+            });
+        });
+    }
+
+    private void populateUIWithVacationDetails(Vacation vacation) {
+        editTextTitle.setText(vacation.getTitle());
+        editTextHotel.setText(vacation.getHotel());
+        editTextStartDate.setText(vacation.getStartDate());
+        editTextEndDate.setText(vacation.getEndDate());
+        currentVacation = vacation;
     }
 
     private void showDatePickerDialog(EditText editText) {
@@ -102,24 +128,42 @@ public class AddVacationActivity extends AppCompatActivity {
         final String endDate = editTextEndDate.getText().toString();
 
         if (validateInput(title, hotel, startDate, endDate)) {
-            Vacation vacation = new Vacation(0, title, hotel, startDate, endDate);
+            Vacation newVacation = new Vacation(currentVacation != null ? currentVacation.getId() : 0, title, hotel, startDate, endDate);
             executor.execute(() -> {
-                try {
-                    AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
-                    long vacationId = db.vacationDao().insert(vacation);
-                    Vacation insertedVacation = db.vacationDao().getVacationById((int) vacationId);
-                    runOnUiThread(() -> {
-                        Toast.makeText(AddVacationActivity.this, "Vacation saved successfully", Toast.LENGTH_SHORT).show();
-                        currentVacation = insertedVacation;
+                AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
 
-                    });
-                } catch (Exception e) {
-                    runOnUiThread(() -> Toast.makeText(AddVacationActivity.this, "Error saving vacation", Toast.LENGTH_SHORT).show());
+                if(currentVacation != null && !currentVacation.equals(newVacation)) {
+                    db.vacationDao().update(newVacation);
+                    showSaveSuccess();
+                } else if (currentVacation == null) {
+                   db.vacationDao().insert(newVacation);
+                    showSaveSuccess();
+                } else {
+                    showNoChangesMade();
                 }
             });
         } else {
-            Toast.makeText(AddVacationActivity.this, "Please fill out all fields correctly. Ensure end date is after start date.", Toast.LENGTH_SHORT).show();
+            showValidationError();
         }
+    }
+
+    private void showSaveSuccess() {
+        runOnUiThread(() -> {
+            Toast.makeText(AddVacationActivity.this, "Vacation saved Successfully", Toast.LENGTH_SHORT).show();
+            resetFields();
+        });
+    }
+
+    private void showNoChangesMade() {
+        runOnUiThread(() -> {
+            Toast.makeText(AddVacationActivity.this, "No changes were made", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    private void showValidationError() {
+        runOnUiThread(() -> {
+            Toast.makeText(AddVacationActivity.this, "Please fill all fields out correctly", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void resetFields() {
