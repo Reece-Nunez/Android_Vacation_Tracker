@@ -24,13 +24,6 @@ public class Vacation {
     @ColumnInfo(name = "end_date")
     private String endDate;
 
-    public Vacation(String title, String hotel, String startDate, String endDate) {
-        this.title = title;
-        this.hotel = hotel;
-        this.startDate = startDate;
-        this.endDate = endDate;
-    }
-
     public Vacation(int id, String title, String hotel, String startDate, String endDate) {
         this.id = id;
         this.title = title;

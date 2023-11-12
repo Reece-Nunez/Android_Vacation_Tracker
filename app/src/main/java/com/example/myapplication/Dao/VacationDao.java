@@ -18,7 +18,7 @@ public interface VacationDao {
     LiveData<List<Vacation>> getAll();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(Vacation vacation);
+    long insert(Vacation vacation);
 
     @Update
     void update(Vacation vacation);
@@ -28,4 +28,5 @@ public interface VacationDao {
 
     @Query("SELECT * FROM vacations WHERE id = :vacationId")
     Vacation getVacationById(int vacationId);
+
 }

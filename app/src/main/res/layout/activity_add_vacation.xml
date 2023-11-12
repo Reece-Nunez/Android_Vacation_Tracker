@@ -34,14 +34,12 @@
             android:id="@+id/editTextStartDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:focusable="false"
             android:hint="Pick Start Date"/>
 
         <EditText
             android:id="@+id/editTextEndDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:focusable="false"
             android:hint="Pick End Date"/>
 
         <Button
@@ -52,11 +50,25 @@
             android:text="Save Vacation"/>
 
         <Button
-            android:id="@+id/btnViewVacations"
+            android:id="@+id/buttonViewVacations"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="View Vacations"/>
+
+        <Button
+            android:id="@+id/buttonSetStartAlert"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Set Start Alert"/>
+
+        <Button
+            android:id="@+id/buttonSetEndAlert"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Set End Alert"/>
 
     </LinearLayout>
 

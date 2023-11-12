@@ -1,132 +1,97 @@
 package com.example.myapplication;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.myapplication.Adapter.VacationAdapter;
 import com.example.myapplication.Database.AppDatabase;
 import com.example.myapplication.Entity.Vacation;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class VacationDetailActivity extends AppCompatActivity {
-    private EditText editTextTitle, editTextHotel, editTextStartDate, editTextEndDate;
-    private ExecutorService executorService;
-    private int vacationId;
-    private Vacation currentVacation;
+public class VacationDetailActivity extends AppCompatActivity implements VacationAdapter.OnVacationListener {
+    private RecyclerView recyclerView;
+    private VacationAdapter adapter;
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vacation_detail);
 
-        editTextTitle = findViewById(R.id.editTextVacationTitle);
-        editTextHotel = findViewById(R.id.editTextHotel);
-        editTextStartDate = findViewById(R.id.editTextStartDate);
-        editTextEndDate = findViewById(R.id.editTextEndDate);
-        Button saveUpdateButton = findViewById(R.id.buttonSaveUpdate);
-        Button deleteButton = findViewById(R.id.buttonDelete);
+        recyclerView = findViewById(R.id.recyclerViewVacations);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new VacationAdapter(new ArrayList<>(), this);
+        recyclerView.setAdapter(adapter);
 
-        vacationId = getIntent().getIntExtra("VACATION_ID", -1);
-        executorService = Executors.newSingleThreadExecutor();
+        loadVacations();
+    }
 
-        loadVacationData();
-        setupButtonListeners();
-
-        saveUpdateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveUpdateVacation();
-            }
+    private void loadVacations() {
+        AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
+        db.vacationDao().getAll().observe(this, vacations -> {
+            adapter.setVacations(vacations);
         });
     }
 
-    private void saveUpdateVacation() {
-        final String title = editTextTitle.getText().toString();
-        final String hotel = editTextHotel.getText().toString();
-        final String startDate = editTextStartDate.getText().toString();
-        final String endDate = editTextEndDate.getText().toString();
-
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
-
-                if (currentVacation == null) {
-                    Vacation newVacation = new Vacation(0, title, hotel, startDate, endDate);
-                    db.vacationDao().insert(newVacation);
-                } else {
-                    currentVacation.setTitle(title);
-                    currentVacation.setHotel(hotel);
-                    currentVacation.setStartDate(startDate);
-                    currentVacation.setEndDate(endDate);
-                    db.vacationDao().update(currentVacation);
-                }
-
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(VacationDetailActivity.this, "Vacation saved successfully!", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                });
-            }
-        });
+    @Override
+    public void onEditClicked(Vacation vacation) {
+        // Implement logic to handle vacation edit
+        // This might include opening a new activity or a dialog with vacation details
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
+               .setTitle("Edit Vacation")
+               .setMessage("Are you sure you want to edit this vacation?")
+               .setPositiveButton("Yes", (dialog, which) -> {
+                    editVacation(vacation);
+                    dialog.dismiss();
+                })
+               .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
+               .create();
+        alertDialog.show();
     }
 
-    private void loadVacationData() {
+    private void editVacation(Vacation vacation) {
         executorService.execute(() -> {
+            AppDatabase appDatabase = AppDatabase.getDatabase(VacationDetailActivity.this);
+            appDatabase.vacationDao().update(vacation);
+            runOnUiThread(this::loadVacations);
+        });
+        finish();
+    }
 
-            AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
-            Vacation vacation = db.vacationDao().getVacationById(vacationId);
+    @Override
+    public void onDeleteClicked(Vacation vacation) {
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
+                .setTitle("Delete Vacation")
+                .setMessage("Are you sure you want to delete this vacation?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    deleteVacation(vacation);
+                    dialog.dismiss();
+                })
+                .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
+                .create();
+        alertDialog.show();
+    }
 
-            new Handler(Looper.getMainLooper()).post(() -> {
-                    if (vacation != null) {
-                        currentVacation = vacation;
-                        editTextTitle.setText(vacation.getTitle());
-                        editTextHotel.setText(vacation.getHotel());
-                        editTextStartDate.setText(vacation.getStartDate().toString());
-                        editTextEndDate.setText(vacation.getEndDate().toString());
-                    } else {
-                        editTextTitle.setText("");
-                        editTextHotel.setText("");
-                        editTextStartDate.setText("");
-                        editTextEndDate.setText("");
-                    }
-                });
-            });
-        }
-
-        private void setupButtonListeners() {
-            Button deleteButton = findViewById(R.id.buttonDelete);
-            deleteButton.setOnClickListener(v -> deleteVacation());
-            }
-
-        private void deleteVacation() {
-            if (currentVacation != null) {
-                executorService.execute(() -> {
-                    AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
-                    db.vacationDao().delete(currentVacation);
-
-                    new Handler(Looper.getMainLooper()).post(() -> {
-                        Toast.makeText(VacationDetailActivity.this, "Vacation deleted successfully!", Toast.LENGTH_SHORT).show();
-                });
-            });
-        }
+    private void deleteVacation(Vacation vacation) {
+        executorService.execute(() -> {
+            AppDatabase appDatabase = AppDatabase.getDatabase(VacationDetailActivity.this);
+            appDatabase.vacationDao().delete(vacation);
+            runOnUiThread(this::loadVacations);
+        });
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if (executorService != null && !executorService.isShutdown()) {
-            executorService.shutdown();
+            executorService.shutdownNow();
         }
     }
 }
