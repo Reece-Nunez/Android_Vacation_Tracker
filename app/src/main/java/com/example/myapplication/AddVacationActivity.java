@@ -102,14 +102,15 @@ public class AddVacationActivity extends AppCompatActivity {
         final String endDate = editTextEndDate.getText().toString();
 
         if (validateInput(title, hotel, startDate, endDate)) {
+            Vacation vacation = new Vacation(0, title, hotel, startDate, endDate);
             executor.execute(() -> {
                 try {
                     AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
-                    Vacation vacation = new Vacation(0, title, hotel, startDate, endDate);
                     long vacationId = db.vacationDao().insert(vacation);
+                    Vacation insertedVacation = db.vacationDao().getVacationById((int) vacationId);
                     runOnUiThread(() -> {
                         Toast.makeText(AddVacationActivity.this, "Vacation saved successfully", Toast.LENGTH_SHORT).show();
-                        currentVacation = db.vacationDao().getVacationById((int) vacationId);
+                        currentVacation = insertedVacation;
 
                     });
                 } catch (Exception e) {
