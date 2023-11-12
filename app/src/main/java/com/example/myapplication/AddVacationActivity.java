@@ -1,11 +1,14 @@
 package com.example.myapplication;
 
 import android.app.AlarmManager;
+import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,6 +21,7 @@ import com.example.myapplication.Database.AppDatabase;
 import com.example.myapplication.Entity.Vacation;
 
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.Executor;
@@ -39,6 +43,9 @@ public class AddVacationActivity extends AppCompatActivity {
         editTextStartDate = findViewById(R.id.editTextStartDate);
         editTextEndDate = findViewById(R.id.editTextEndDate);
 
+        editTextStartDate.setOnClickListener(v -> showDatePickerDialog(editTextStartDate));
+        editTextEndDate.setOnClickListener(v -> showDatePickerDialog(editTextEndDate));
+
         Button saveButton = findViewById(R.id.buttonSaveVacation);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,12 +53,6 @@ public class AddVacationActivity extends AppCompatActivity {
                 saveVacation();
             }
         });
-
-        Button startAlertButton = findViewById(R.id.buttonSetStartAlert);
-        startAlertButton.setOnClickListener(v -> onSetAlertClicked(currentVacation, true));
-
-        Button endAlertButton = findViewById(R.id.buttonSetEndAlert);
-        endAlertButton.setOnClickListener(v -> onSetAlertClicked(currentVacation, false));
 
         Button viewVacationsButton = findViewById(R.id.buttonViewVacations);
         viewVacationsButton.setOnClickListener(new View.OnClickListener() {
@@ -61,6 +62,37 @@ public class AddVacationActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        Button setAlertButton = findViewById(R.id.buttonSetAlert);
+        setAlertButton.setOnClickListener(v -> {
+            if (currentVacation != null) {
+                setAlarmForVacation(currentVacation, true);
+                Toast.makeText(AddVacationActivity.this, "Alerts for vacation start and end have been set.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(AddVacationActivity.this, "No vacation selected to set alert for.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showDatePickerDialog(EditText editText) {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                AddVacationActivity.this,
+                (view, year1, month1, dayOfMonth) -> {
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+                    String SelectedDate = String.format(Locale.US, "%02d/%02d/%04d", month1 + 1, dayOfMonth, year1);
+                    editText.setText(SelectedDate);
+                },
+                year,
+                month,
+                day
+        );
+
+        datePickerDialog.show();
     }
 
     private void saveVacation() {
@@ -70,19 +102,19 @@ public class AddVacationActivity extends AppCompatActivity {
         final String endDate = editTextEndDate.getText().toString();
 
         if (validateInput(title, hotel, startDate, endDate)) {
-            Vacation vacation = new Vacation(0, title, hotel, startDate, endDate);
             executor.execute(() -> {
-               try {
-                   AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
-                   long vacationId = db.vacationDao().insert(vacation);
-                   runOnUiThread(() -> {
-                       Toast.makeText(AddVacationActivity.this, "Vacation saved successfully", Toast.LENGTH_SHORT).show();
-                       currentVacation = new Vacation((int) vacationId, title, hotel, startDate, endDate);
+                try {
+                    AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
+                    Vacation vacation = new Vacation(0, title, hotel, startDate, endDate);
+                    long vacationId = db.vacationDao().insert(vacation);
+                    runOnUiThread(() -> {
+                        Toast.makeText(AddVacationActivity.this, "Vacation saved successfully", Toast.LENGTH_SHORT).show();
+                        currentVacation = db.vacationDao().getVacationById((int) vacationId);
 
-                   });
-               } catch (Exception e) {
-                   runOnUiThread(() -> Toast.makeText(AddVacationActivity.this, "Error saving vacation", Toast.LENGTH_SHORT).show());
-               }
+                    });
+                } catch (Exception e) {
+                    runOnUiThread(() -> Toast.makeText(AddVacationActivity.this, "Error saving vacation", Toast.LENGTH_SHORT).show());
+                }
             });
         } else {
             Toast.makeText(AddVacationActivity.this, "Please fill out all fields correctly. Ensure end date is after start date.", Toast.LENGTH_SHORT).show();
@@ -97,23 +129,39 @@ public class AddVacationActivity extends AppCompatActivity {
 
     private void setAlarmForVacation(Vacation vacation, boolean isStarting) {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
+                Log.d("SetAlarm", "Permission to schedule exact alarms not granted. Requesting permission.");
+                Intent intent = new Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                startActivity(intent);
+                return;
+            } else {
+                Log.d("SetAlarm", "Permission to schedule exact alarms granted or not needed.");
+            }
+        }
+        setAlarm(vacation, true);
+        setAlarm(vacation, false);
+
+    }
+
+    private void setAlarm(Vacation vacation, boolean isStarting) {
+        Log.d("SetAlarm", "Setting alarm for " + (isStarting ? "start" : "end") + " time.");
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, AlertReceiver.class);
-
         intent.putExtra("VACATION_TITLE", vacation.getTitle());
+        intent.putExtra("STARTING", isStarting);
 
-        // Set Start Date Alarm
-        PendingIntent startIntent = PendingIntent.getBroadcast(this, vacation.getId(), intent, PendingIntent.FLAG_IMMUTABLE);
-        long startMillis = getDateMillis(vacation.getStartDate());
-        alarmManager.set(AlarmManager.RTC_WAKEUP, startMillis, startIntent);
+        long timeInMillis = isStarting ? getDateMillis(vacation.getStartDate()) : getDateMillis(vacation.getEndDate());
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, (vacation.getId() * 2) + (isStarting ? 0 : 1), intent, PendingIntent.FLAG_IMMUTABLE);
 
-        // Set End Date Alarm
-        PendingIntent endIntent = PendingIntent.getBroadcast(this, vacation.getId() + 1, intent, 0);
-        long endMillis = getDateMillis(vacation.getEndDate());
-        alarmManager.set(AlarmManager.RTC_WAKEUP, endMillis, endIntent);
+        if (timeInMillis > System.currentTimeMillis()) {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
+        }
     }
 
     private long getDateMillis(String dateString) {
-        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
         try {
             Date date = sdf.parse(dateString);
             return date != null ? date.getTime() : 0;
@@ -128,7 +176,7 @@ public class AddVacationActivity extends AppCompatActivity {
             return false;
         }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
         try {
             Date start = sdf.parse(startDateStr);
             Date end = sdf.parse(endDateStr);

@@ -12,7 +12,7 @@ import java.util.List;
 
 public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.VacationViewHolder> {
     private List<Vacation> vacations;
-    private OnVacationListener onVacationListener;
+    private final OnVacationListener onVacationListener;
 
     public VacationAdapter(List<Vacation> vacations, OnVacationListener onVacationListener) {
         this.vacations = vacations;
@@ -32,7 +32,7 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
 
     @Override
     public int getItemCount() {
-        return vacations.size();
+        return vacations != null ? vacations.size() : 0;
     }
 
     class VacationViewHolder extends RecyclerView.ViewHolder {
@@ -62,13 +62,13 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
         }
     }
 
-    public interface OnVacationListener {
-        void onEditClicked(Vacation vacation);
-        void onDeleteClicked(Vacation vacation);
-    }
-
     public void setVacations(List<Vacation> vacations) {
         this.vacations = vacations;
         notifyDataSetChanged();
+    }
+
+    public interface OnVacationListener {
+        void onEditClicked(Vacation vacation);
+        void onDeleteClicked(Vacation vacation);
     }
 }

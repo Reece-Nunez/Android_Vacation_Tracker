@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
@@ -18,7 +19,7 @@ import java.util.concurrent.Executors;
 public class VacationDetailActivity extends AppCompatActivity implements VacationAdapter.OnVacationListener {
     private RecyclerView recyclerView;
     private VacationAdapter adapter;
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +43,6 @@ public class VacationDetailActivity extends AppCompatActivity implements Vacatio
 
     @Override
     public void onEditClicked(Vacation vacation) {
-        // Implement logic to handle vacation edit
-        // This might include opening a new activity or a dialog with vacation details
         AlertDialog alertDialog = new AlertDialog.Builder(this)
                .setTitle("Edit Vacation")
                .setMessage("Are you sure you want to edit this vacation?")
@@ -54,6 +53,10 @@ public class VacationDetailActivity extends AppCompatActivity implements Vacatio
                .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
                .create();
         alertDialog.show();
+
+        Intent intent = new Intent(VacationDetailActivity.this, VacationDetailActivity.class);
+        intent.putExtra("vacationId", vacation.getId());
+        startActivity(intent);
     }
 
     private void editVacation(Vacation vacation) {

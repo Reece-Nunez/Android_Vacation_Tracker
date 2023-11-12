@@ -1,51 +1,50 @@
 package com.example.myapplication.Broadcasts;
 
-import android.Manifest;
-import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
+import android.util.Log;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import com.example.myapplication.R;
 
 public class AlertReceiver extends BroadcastReceiver {
+    private static final String CHANNEL_ID = "vacation_channel";
+
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.d("AlertReceiver", "Alarm received");
+
+        createNotificationChannel(context);
+
         String vacationTitle = intent.getStringExtra("VACATION_TITLE");
-        boolean isStarting = determineIfStarting(intent);
+        boolean isStarting = intent.getBooleanExtra("STARTING", false);
+        String message = isStarting ? "Your vacation '" + vacationTitle + "' is starting!" : "Your vacation '" + vacationTitle + "' is ending!";
 
-        createNotification(context, vacationTitle, isStarting);
-    }
-
-    private boolean determineIfStarting(Intent intent) {
-        return intent.getBooleanExtra("STARTING", false);
-    }
-
-    private void createNotification(Context context, String vacationTitle, boolean isStarting) {
-        String message = isStarting ? "Vacation is starting" : "Vacation is ending";
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "VACATION_CHANNEL")
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(vacationTitle)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification)  // Replace with your notification icon
+                .setContentTitle("Vacation Alert")
                 .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                .setPriority(NotificationCompat.PRIORITY_HIGH);
 
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                    (Activity) context,
-                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
-                    1
-            );
-            return;
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(vacationTitle.hashCode(), builder.build());  // Unique ID for each notification
+    }
+
+    private void createNotificationChannel(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Vacation Notification Channel";
+            String description = "Channel for Vacation Alarms";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
         }
-        notificationManager.notify(1, builder.build());
-
     }
 }
