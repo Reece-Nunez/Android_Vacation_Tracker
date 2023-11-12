@@ -13,6 +13,7 @@ import com.example.myapplication.Database.AppDatabase;
 import com.example.myapplication.Entity.Vacation;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -35,9 +36,12 @@ public class VacationDetailActivity extends AppCompatActivity implements Vacatio
     }
 
     private void loadVacations() {
-        AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
-        db.vacationDao().getAll().observe(this, vacations -> {
-            adapter.setVacations(vacations);
+        executorService.execute(() -> {
+            AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
+            List<Vacation> vacations = db.vacationDao().getAllVacationsSync();
+            runOnUiThread(() -> {
+                adapter.setVacations(vacations);
+            });
         });
     }
 

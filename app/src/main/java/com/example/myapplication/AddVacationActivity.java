@@ -122,6 +122,14 @@ public class AddVacationActivity extends AppCompatActivity {
         }
     }
 
+    private void resetFields() {
+        editTextTitle.setText("");
+        editTextHotel.setText("");
+        editTextStartDate.setText("");
+        editTextEndDate.setText("");
+
+    }
+
     private void onSetAlertClicked(Vacation vacation, boolean isStarting) {
         if (vacation != null) {
             setAlarmForVacation(vacation, isStarting);
