@@ -57,4 +57,12 @@
             android:text="Share"/>
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/buttonAddExcursion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Excursion"
+        android:layout_gravity="center_horizontal"/>
+
 </LinearLayout>
