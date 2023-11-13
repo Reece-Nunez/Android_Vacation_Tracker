@@ -110,6 +110,20 @@ public class VacationDetailActivity extends AppCompatActivity implements Vacatio
     }
 
     @Override
+    public void onAddExcursionClicked(Vacation vacation) {
+        Intent intent = new Intent(VacationDetailActivity.this, AddEditExcursionActivity.class);
+        intent.putExtra("vacationId", vacation.getId());
+        startActivity(intent);
+    }
+
+    @Override
+    public void onViewExcursionsClicked(Vacation vacation) {
+        Intent intent = new Intent(VacationDetailActivity.this, ViewExcursionActivity.class);
+        intent.putExtra("vacationId", vacation.getId());
+        startActivity(intent);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (executorService != null && !executorService.isShutdown()) {

@@ -86,7 +86,7 @@ public class AddVacationActivity extends AppCompatActivity {
     private void loadVacationDetails(int vacationId) {
         executor.execute(() -> {
             AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
-            Vacation vacation = db.vacationDao().getVacationById(vacationId);
+            Vacation vacation = db.vacationDao().getVacationById(vacationId).getValue();
             runOnUiThread(() -> {
                 populateUIWithVacationDetails(vacation);
             });

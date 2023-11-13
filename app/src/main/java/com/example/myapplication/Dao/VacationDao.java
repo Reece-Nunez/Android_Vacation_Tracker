@@ -27,9 +27,11 @@ public interface VacationDao {
     void delete(Vacation vacation);
 
     @Query("SELECT * FROM vacations WHERE id = :vacationId")
-    Vacation getVacationById(int vacationId);
+    LiveData<Vacation> getVacationById(int vacationId);
 
     @Query("SELECT * FROM vacations")
     List<Vacation> getAllVacationsSync();
 
+    @Query("SELECT * FROM vacations WHERE id = :vacationId")
+    Vacation getVacationByIdSync(int vacationId);
 }

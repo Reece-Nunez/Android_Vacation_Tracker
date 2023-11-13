@@ -36,5 +36,10 @@
             android:name=".VacationDetailActivity"
             android:exported="true"/>
 
+        <activity android:name=".AddEditExcursionActivity"
+            android:exported="true"/>
+        <activity android:name=".ViewExcursionActivity"
+            android:exported="true"/>
+
     </application>
 </manifest>

@@ -38,7 +38,7 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
 
     class VacationViewHolder extends RecyclerView.ViewHolder {
         TextView textViewTitle, textViewHotel, textViewStartDate, textViewEndDate;
-        Button editButton, deleteButton, shareButton;
+        Button editButton, deleteButton, shareButton, addButton, viewButton;
 
         VacationViewHolder(View itemView, OnVacationListener listener) {
             super(itemView);
@@ -47,10 +47,14 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
             textViewStartDate = itemView.findViewById(R.id.textViewStartDate);
             textViewEndDate = itemView.findViewById(R.id.textViewEndDate);
 
+            viewButton = itemView.findViewById(R.id.buttonViewExcursions);
+            addButton = itemView.findViewById(R.id.buttonAddExcursion);
             editButton = itemView.findViewById(R.id.buttonEdit);
             deleteButton = itemView.findViewById(R.id.buttonDelete);
             shareButton = itemView.findViewById(R.id.buttonShare);
 
+            viewButton.setOnClickListener(v -> listener.onViewExcursionsClicked(vacations.get(getAdapterPosition())));
+            addButton.setOnClickListener(v -> listener.onAddExcursionClicked(vacations.get(getAdapterPosition())));
             editButton.setOnClickListener(v -> listener.onEditClicked(vacations.get(getAdapterPosition())));
             deleteButton.setOnClickListener(v -> listener.onDeleteClicked(vacations.get(getAdapterPosition())));
             shareButton.setOnClickListener(v -> listener.onShareClicked(vacations.get(getAdapterPosition())));
@@ -74,5 +78,8 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
         void onEditClicked(Vacation vacation);
         void onDeleteClicked(Vacation vacation);
         void onShareClicked(Vacation vacation);
+        void onAddExcursionClicked(Vacation vacation);
+        void onViewExcursionsClicked(Vacation vacation);
+
     }
 }
