@@ -33,7 +33,6 @@ public class AddVacationActivity extends AppCompatActivity {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
     private Vacation currentVacation;
-    private Vacation originalVacation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,18 +129,20 @@ public class AddVacationActivity extends AppCompatActivity {
         final String endDate = editTextEndDate.getText().toString();
 
         if (validateInput(title, hotel, startDate, endDate)) {
-            Vacation newVacation = new Vacation(currentVacation != null ? currentVacation.getId() : 0, title, hotel, startDate, endDate);
             executor.execute(() -> {
                 AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
 
-                if(currentVacation != null && !currentVacation.equals(newVacation)) {
-                    db.vacationDao().update(newVacation);
-                    showSaveSuccess();
-                } else if (currentVacation == null) {
-                   db.vacationDao().insert(newVacation);
+                if(currentVacation == null) {
+                    Vacation newVacation = new Vacation(0, title, hotel, startDate, endDate);
+                    long vacationId = db.vacationDao().insert(newVacation);
                     showSaveSuccess();
                 } else {
-                    showNoChangesMade();
+                    currentVacation.setTitle(title);
+                    currentVacation.setHotel(hotel);
+                    currentVacation.setStartDate(startDate);
+                    currentVacation.setEndDate(endDate);
+                    db.vacationDao().update(currentVacation);
+                    showSaveSuccess();
                 }
             });
         } else {
