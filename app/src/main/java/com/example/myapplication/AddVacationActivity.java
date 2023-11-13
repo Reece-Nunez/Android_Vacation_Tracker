@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -68,6 +69,7 @@ public class AddVacationActivity extends AppCompatActivity {
         setAlertButton.setOnClickListener(v -> {
             if (currentVacation != null) {
                 setAlarmForVacation(currentVacation, true);
+                addEventToCalendar(currentVacation);
                 Toast.makeText(AddVacationActivity.this, "Alerts for vacation start and end have been set.", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(AddVacationActivity.this, "No vacation selected to set alert for.", Toast.LENGTH_SHORT).show();
@@ -164,6 +166,30 @@ public class AddVacationActivity extends AppCompatActivity {
         runOnUiThread(() -> {
             Toast.makeText(AddVacationActivity.this, "Please fill all fields out correctly", Toast.LENGTH_SHORT).show();
         });
+    }
+
+    private void addEventToCalendar(Vacation vacation) {
+        Intent intent = new Intent(Intent.ACTION_INSERT);
+        intent.setData(CalendarContract.Events.CONTENT_URI);
+        intent.putExtra(CalendarContract.Events.TITLE, vacation.getTitle() + " Vacation");
+        intent.putExtra(CalendarContract.Events.DESCRIPTION, "Vacation hotel: " + vacation.getHotel());
+
+        long startMillis = getDateMillis(vacation.getStartDate());
+        long endMillis = getDateMillis(vacation.getEndDate());
+
+        if (startMillis == 0 || endMillis == 0) {
+            Toast.makeText(this, "Invalid dates for calendar event", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis);
+        intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endMillis);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "No calendar app found", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void resetFields() {
