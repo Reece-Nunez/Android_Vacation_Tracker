@@ -21,6 +21,7 @@ public class VacationDetailActivity extends AppCompatActivity implements Vacatio
     private RecyclerView recyclerView;
     private VacationAdapter adapter;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private Vacation currentVacation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +34,27 @@ public class VacationDetailActivity extends AppCompatActivity implements Vacatio
         recyclerView.setAdapter(adapter);
 
         loadVacations();
+
+    }
+
+    public void onShareClicked(Vacation vacation) {
+        shareVacationDetails(vacation);
+    }
+
+    private void shareVacationDetails(Vacation vacation) {
+        String shareText = "Vacation Details:\n" +
+                "Title: " + vacation.getTitle() + "\n" +
+                "Hotel: " + vacation.getHotel() + "\n" +
+                "Start Date: " + vacation.getStartDate() + "\n" +
+                "End Date: " + vacation.getEndDate();
+
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+        sendIntent.setType("text/plain");
+
+        Intent shareIntent = Intent.createChooser(sendIntent, null);
+        startActivity(shareIntent);
     }
 
     private void loadVacations() {

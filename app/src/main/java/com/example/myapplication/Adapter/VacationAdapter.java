@@ -28,6 +28,7 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
     @Override
     public void onBindViewHolder(VacationViewHolder holder, int position) {
         holder.bind(vacations.get(position));
+
     }
 
     @Override
@@ -37,7 +38,7 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
 
     class VacationViewHolder extends RecyclerView.ViewHolder {
         TextView textViewTitle, textViewHotel, textViewStartDate, textViewEndDate;
-        Button editButton, deleteButton;
+        Button editButton, deleteButton, shareButton;
 
         VacationViewHolder(View itemView, OnVacationListener listener) {
             super(itemView);
@@ -48,9 +49,11 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
 
             editButton = itemView.findViewById(R.id.buttonEdit);
             deleteButton = itemView.findViewById(R.id.buttonDelete);
+            shareButton = itemView.findViewById(R.id.buttonShare);
 
             editButton.setOnClickListener(v -> listener.onEditClicked(vacations.get(getAdapterPosition())));
             deleteButton.setOnClickListener(v -> listener.onDeleteClicked(vacations.get(getAdapterPosition())));
+            shareButton.setOnClickListener(v -> listener.onShareClicked(vacations.get(getAdapterPosition())));
 
         }
 
@@ -70,5 +73,6 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
     public interface OnVacationListener {
         void onEditClicked(Vacation vacation);
         void onDeleteClicked(Vacation vacation);
+        void onShareClicked(Vacation vacation);
     }
 }
