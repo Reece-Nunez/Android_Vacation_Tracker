@@ -43,10 +43,20 @@ public class ViewExcursionActivity extends AppCompatActivity implements Excursio
         adapter = new ExcursionAdapter(new ArrayList<>(), this);
         recyclerView.setAdapter(adapter);
 
-        loadExcursions(vacationId);
+        loadExcursions();
     }
 
-    private void loadExcursions(int vacationId) {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadExcursions();
+    }
+
+    private void loadExcursions() {
+        int vacationId = getIntent().getIntExtra("vacationId", -1);
+        if (vacationId == -1) {
+            return;
+        }
         executorService.execute(() -> {
             AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
             List<Excursion> excursions = db.excursionDao().getExcursionsForVacationSync(vacationId);
@@ -59,6 +69,7 @@ public class ViewExcursionActivity extends AppCompatActivity implements Excursio
     public void onEditExcursionClicked(Excursion excursion) {
         Intent intent = new Intent(this, AddEditExcursionActivity.class);
         intent.putExtra("excursionId", excursion.getId());
+        intent.putExtra("vacationId", excursion.getVacationId());
         startActivity(intent);
     }
 
@@ -85,7 +96,7 @@ public class ViewExcursionActivity extends AppCompatActivity implements Excursio
         AppDatabase db = AppDatabase.getDatabase(this);
         executorService.execute(() -> {
             db.excursionDao().delete(excursion);
-            runOnUiThread(() -> loadExcursions(excursion.getVacationId()));
+            runOnUiThread(() -> loadExcursions());
         });
     }
 

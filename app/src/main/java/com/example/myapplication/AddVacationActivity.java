@@ -84,12 +84,13 @@ public class AddVacationActivity extends AppCompatActivity {
     }
 
     private void loadVacationDetails(int vacationId) {
-        executor.execute(() -> {
-            AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
-            Vacation vacation = db.vacationDao().getVacationById(vacationId).getValue();
-            runOnUiThread(() -> {
+        AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
+        db.vacationDao().getVacationById(vacationId).observe(this, vacation -> {
+            if (vacation != null) {
                 populateUIWithVacationDetails(vacation);
-            });
+            } else {
+                Toast.makeText(AddVacationActivity.this, "Vacation not found.", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -268,5 +269,12 @@ public class AddVacationActivity extends AppCompatActivity {
         } catch (ParseException e) {
             return false;
         }
+    }
+
+    public void clearFields(View view) {
+        editTextTitle.getText().clear();
+        editTextHotel.getText().clear();
+        editTextStartDate.getText().clear();
+        editTextEndDate.getText().clear();
     }
 }

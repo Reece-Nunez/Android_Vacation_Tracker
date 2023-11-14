@@ -84,7 +84,6 @@ public class VacationDetailActivity extends AppCompatActivity implements Vacatio
        Intent intent = new Intent(VacationDetailActivity.this, AddVacationActivity.class);
        intent.putExtra("vacationId", vacation.getId());
        startActivity(intent);
-       finish();
     }
 
     @Override

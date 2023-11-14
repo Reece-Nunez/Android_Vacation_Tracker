@@ -41,6 +41,9 @@ public class AddEditExcursionActivity extends AppCompatActivity {
 
         db = AppDatabase.getDatabase(getApplicationContext());
         vacationId = getIntent().getIntExtra("vacationId", -1);
+        if (vacationId == -1) {
+            Toast.makeText(this, "Vacation ID is missing", Toast.LENGTH_SHORT).show();
+        }
 
         int excursionId = getIntent().getIntExtra("excursionId", -1);
         if (excursionId != -1) {
