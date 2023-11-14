@@ -20,6 +20,8 @@ import com.example.myapplication.Entity.Excursion;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -60,6 +62,9 @@ public class ViewExcursionActivity extends AppCompatActivity implements Excursio
         executorService.execute(() -> {
             AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
             List<Excursion> excursions = db.excursionDao().getExcursionsForVacationSync(vacationId);
+
+            Collections.sort(excursions, Comparator.comparing(Excursion::getDate));
+
             runOnUiThread(() -> {
                 adapter.setExcursions(excursions);
             });
