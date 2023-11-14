@@ -51,7 +51,7 @@ public class ExcursionAdapter extends RecyclerView.Adapter<ExcursionAdapter.Excu
 
     class ExcursionViewHolder extends RecyclerView.ViewHolder {
         TextView textViewTitle, textViewDate;
-        Button editButton, deleteButton, saveButton;
+        Button editButton, deleteButton, saveButton, alertButton;
 
         ExcursionViewHolder(View itemView, OnExcursionListener listener) {
             super(itemView);
@@ -61,10 +61,12 @@ public class ExcursionAdapter extends RecyclerView.Adapter<ExcursionAdapter.Excu
             editButton = itemView.findViewById(R.id.buttonExcursionEdit);
             deleteButton = itemView.findViewById(R.id.buttonExcursionDelete);
             saveButton = itemView.findViewById(R.id.buttonExcursionSave);
+            alertButton = itemView.findViewById(R.id.buttonSetExcursionAlert);
 
             editButton.setOnClickListener(v -> listener.onEditExcursionClicked(excursions.get(getAdapterPosition())));
             deleteButton.setOnClickListener(v -> listener.onDeleteExcursionClicked(excursions.get(getAdapterPosition())));
             saveButton.setOnClickListener(v -> listener.onSaveExcursionClicked(excursions.get(getAdapterPosition())));
+            alertButton.setOnClickListener(v -> listener.onSetExcursionAlertClicked(excursions.get(getAdapterPosition())));
         }
 
         void bind(Excursion excursion) {
@@ -79,6 +81,8 @@ public class ExcursionAdapter extends RecyclerView.Adapter<ExcursionAdapter.Excu
         void onDeleteExcursionClicked(Excursion excursion);
 
         void onSaveExcursionClicked(Excursion excursion);
+
+        void onSetExcursionAlertClicked(Excursion excursion);
 
     }
 }

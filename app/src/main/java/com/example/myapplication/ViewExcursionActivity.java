@@ -1,19 +1,27 @@
 package com.example.myapplication;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.icu.util.Calendar;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.Adapter.ExcursionAdapter;
+import com.example.myapplication.Broadcasts.AlertReceiver;
 import com.example.myapplication.Database.AppDatabase;
 import com.example.myapplication.Entity.Excursion;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -81,6 +89,35 @@ public class ViewExcursionActivity extends AppCompatActivity implements Excursio
         });
     }
 
+    @Override
+    public void onSetExcursionAlertClicked(Excursion excursion) {
+        Calendar calendar = parseExcursionDate(excursion.getDate());
+        Intent alertIntent = new Intent(this, AlertReceiver.class);
+        alertIntent.putExtra("excursion_title", excursion.getTitle());
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this, excursion.getId(), alertIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        if (alarmManager != null) {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+            Toast.makeText(this, "Alert set for: " + excursion.getTitle(), Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Error setting the alarm", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private Calendar parseExcursionDate(String dateString) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+        Calendar calendar = Calendar.getInstance();
+        try {
+            calendar.setTime(dateFormat.parse(dateString));
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Failed to parse date", Toast.LENGTH_SHORT).show();
+        }
+        return calendar;
+    }
 
     @Override
     protected void onDestroy() {

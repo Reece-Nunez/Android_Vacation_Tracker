@@ -32,7 +32,8 @@ public class AlertReceiver extends BroadcastReceiver {
                 .setPriority(NotificationCompat.PRIORITY_HIGH);
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(vacationTitle.hashCode(), builder.build());  // Unique ID for each notification
+        notificationManager.notify(vacationTitle.hashCode(), builder.build());
+
     }
 
     private void createNotificationChannel(Context context) {
